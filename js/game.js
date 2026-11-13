@@ -195,7 +195,7 @@ class Game {
     this.gameScreen.style.display = "none";
     this.gameViewport.style.display = "none";
     this.gameEndScreen.style.display = "block";
-
+    document.getElementById("touch-controls").classList.remove("is-visible");
     document.getElementById("lives-container").style.display = "none";
     document.getElementById("score-container").style.display = "none";
     document.getElementById("final-score").innerText = this.score;
