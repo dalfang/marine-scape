@@ -3,6 +3,7 @@ class Game {
     this.startScreen = document.getElementById("game-intro");
     this.instructionsScreen = document.getElementById("instructions");
     this.gameScreen = document.getElementById("game-screen");
+    this.gameViewport = document.getElementById("game-viewport");
     this.gameEndScreen = document.getElementById("game-end");
     this.player = new Player(
       this.gameScreen,
@@ -18,6 +19,10 @@ class Game {
     this.hearts = [new Heart(this.gameScreen)];
     this.bonuses = [new Bonus(this.gameScreen)];
     this.score = 0;
+    this.leaderboard = this.getLeaderboard();
+    this.highScore = this.leaderboard[0]?.score || 0;
+    this.highScoreName = this.leaderboard[0]?.name || "";
+    this.isNewHighScore = false;
     this.bubbles = 0;
     this.lives = 5;
     this.isGameOver = false;
@@ -25,6 +30,10 @@ class Game {
     this.gameLoopFrequency = 1000 / 65;
     this.counter = 0;
     this.level = 120;
+    this.minimumObstacleGap = 350;
+    this.obstacleSpeed = 9;
+    this.fitGameScreen = this.fitGameScreen.bind(this);
+    window.addEventListener("resize", this.fitGameScreen);
   }
 
   instructions() {
@@ -32,6 +41,7 @@ class Game {
     this.instructionsScreen.style.height = `${this.height}px`;
     this.gameScreen.style.width = `${this.width}px`;
     this.startScreen.style.display = "none";
+    this.gameViewport.style.display = "none";
     this.gameScreen.style.display = "none";
   }
 
@@ -42,44 +52,66 @@ class Game {
     this.gameScreen.style.height = `${this.height}px`;
     this.gameScreen.style.width = `${this.width}px`;
     this.startScreen.style.display = "none";
+    this.gameViewport.style.display = "block";
     this.gameScreen.style.display = "block";
+    this.fitGameScreen();
     document.getElementById("lives-container").style.display = "flex";
     document.getElementById("score-container").style.display = "flex";
+    this.updateScoreDisplay();
     this.gameIntervalId = setInterval(() => {
       this.gameLoop();
     }, this.gameLoopFrequency);
-    setTimeout(() => {
-      this.playSoundTrack();
-    }, 1000);
   }
 
   gameLoop() {
     this.update();
     this.counter++;
-    if (this.counter % this.level === 0) {
-      this.obstacles.push(new Obstacle(this.gameScreen, this.speed));
-    }
-    if (this.score >= 200) {
-      this.level = 80;
-    }
-    if (this.score >= 400) {
-      this.level = 70;
-    }
-    if (this.score >= 600) {
-      this.level = 60;
-    }
-    if (this.score >= 800) {
-      this.level = 50;
-    }
-    if (this.score >= 1000) {
-      this.level = 40;
+    this.updateDifficulty();
+    if (this.counter % this.level === 0 && this.canSpawnObstacle()) {
+      this.obstacles.push(new Obstacle(this.gameScreen, this.obstacleSpeed));
     }
     if (this.isGameOver) {
       clearInterval(this.gameIntervalId);
       this.gameOver();
-      this.setHighScores();
     }
   }
+
+  updateDifficulty() {
+    if (this.score >= 1000) {
+      this.level = 40;
+      this.obstacleSpeed = 13;
+    } else if (this.score >= 800) {
+      this.level = 50;
+      this.obstacleSpeed = 12;
+    } else if (this.score >= 600) {
+      this.level = 60;
+      this.obstacleSpeed = 11;
+    } else if (this.score >= 400) {
+      this.level = 70;
+      this.obstacleSpeed = 10;
+    } else if (this.score >= 200) {
+      this.level = 80;
+      this.obstacleSpeed = 10;
+    }
+  }
+
+  canSpawnObstacle() {
+    const newestObstacle = this.obstacles[this.obstacles.length - 1];
+    if (!newestObstacle) {
+      return true;
+    }
+    const gapAfterNewestObstacle = this.width - (newestObstacle.left + newestObstacle.width);
+    return gapAfterNewestObstacle >= this.minimumObstacleGap;
+  }
+
+  fitGameScreen() {
+    const availableWidth = Math.max(280, window.innerWidth - 24);
+    const scale = Math.min(1, availableWidth / this.width);
+    this.gameViewport.style.width = `${this.width * scale}px`;
+    this.gameViewport.style.height = `${this.height * scale}px`;
+    this.gameScreen.style.transform = `scale(${scale})`;
+  }
+
   update() {
     this.player.move();
 
@@ -107,9 +139,7 @@ class Game {
       if (oneObstacle.left < 0 - oneObstacle.width) {
         this.obstacles.splice(oneObstacleIndex, 1);
         oneObstacle.element.remove();
-        this.score += 10;
-        const scoreElement = document.getElementById("score");
-        scoreElement.innerText = this.score;
+        this.addScore(10);
       }
     });
 
@@ -144,9 +174,7 @@ class Game {
       if (bonusAcquired) {
         this.bonuses.splice(oneBonusIndex, 1);
         oneBonus.element.remove();
-        this.score += 50;
-        const scoreElement = document.getElementById("score");
-        scoreElement.innerText = this.score;
+        this.addScore(50);
         this.bonuses.push(new Bonus(this.gameScreen));
       }
 
@@ -158,11 +186,107 @@ class Game {
     });
   }
   gameOver() {
+    window.scrollTo(0, 0);
+    window.setTimeout(() => window.scrollTo(0, 0), 0);
+    this.startScreen.style.display = "none";
+    this.instructionsScreen.style.display = "none";
     this.gameScreen.style.display = "none";
+    this.gameViewport.style.display = "none";
     this.gameEndScreen.style.display = "block";
 
     document.getElementById("lives-container").style.display = "none";
     document.getElementById("score-container").style.display = "none";
     document.getElementById("final-score").innerText = this.score;
+    document.getElementById("final-high-score").innerText = this.highScore;
+    document.getElementById("final-high-score-name").innerText = this.highScoreName;
+    this.renderLeaderboard();
+    document.getElementById("new-high-score-message").style.display = "block";
+    document.getElementById("new-high-score-message").innerText = this.isNewHighScore
+      ? "New high score! Enter your name."
+      : "Enter your name to save this score.";
+    document.getElementById("high-score-form").style.display = "flex";
+    document.getElementById("player-name").focus();
+  }
+
+  getLeaderboard() {
+    const storedLeaderboard = localStorage.getItem("marineScapeLeaderboard");
+    if (storedLeaderboard) {
+      try {
+        const leaderboard = JSON.parse(storedLeaderboard);
+        if (Array.isArray(leaderboard)) {
+          return leaderboard
+            .filter((entry) => typeof entry.name === "string" && Number.isFinite(entry.score))
+            .map((entry) => ({ name: entry.name.slice(0, 12), score: entry.score }))
+            .sort((first, second) => second.score - first.score)
+            .slice(0, 6);
+        }
+      } catch (error) {
+        localStorage.removeItem("marineScapeLeaderboard");
+      }
+    }
+
+    const previousScore = Number.parseInt(localStorage.getItem("marineScapeHighScore"), 10);
+    if (Number.isNaN(previousScore) || previousScore === 0) {
+      return [];
+    }
+    return [{
+      name: localStorage.getItem("marineScapeHighScoreName") || "Anonymous",
+      score: previousScore,
+    }];
+  }
+
+  addScore(points) {
+    this.score += points;
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      this.isNewHighScore = true;
+    }
+    this.updateScoreDisplay();
+  }
+
+  updateScoreDisplay() {
+    document.getElementById("score").innerText = this.score;
+    document.getElementById("high-score").innerText = this.highScore;
+    document.getElementById("high-score-name").innerText = this.highScoreName;
+    document.getElementById("new-high-score").style.display = this.isNewHighScore
+      ? "inline"
+      : "none";
+  }
+
+  saveHighScoreName(playerName) {
+    const savedName = playerName.trim().slice(0, 12) || "Anonymous";
+    const currentRun = { name: savedName, score: this.score };
+    this.leaderboard = [...this.leaderboard, currentRun]
+      .sort((first, second) => second.score - first.score)
+      .slice(0, 6);
+    const madeLeaderboard = this.leaderboard.includes(currentRun);
+    this.highScore = this.leaderboard[0].score;
+    this.highScoreName = this.leaderboard[0].name;
+    localStorage.setItem("marineScapeLeaderboard", JSON.stringify(this.leaderboard));
+    localStorage.setItem("marineScapeHighScore", this.highScore);
+    localStorage.setItem("marineScapeHighScoreName", this.highScoreName);
+    this.renderLeaderboard();
+    document.getElementById("final-high-score").innerText = this.highScore;
+    document.getElementById("final-high-score-name").innerText = this.highScoreName;
+    document.getElementById("high-score-form").style.display = "none";
+    document.getElementById("new-high-score-message").innerText = madeLeaderboard
+      ? `${savedName}'s score of ${this.score} is on the leaderboard!`
+      : `${savedName}'s score of ${this.score} did not reach the top six.`;
+  }
+
+  renderLeaderboard() {
+    const leaderboardList = document.getElementById("leaderboard-list");
+    leaderboardList.replaceChildren();
+    if (this.leaderboard.length === 0) {
+      const emptyEntry = document.createElement("li");
+      emptyEntry.innerText = "No scores saved yet";
+      leaderboardList.appendChild(emptyEntry);
+      return;
+    }
+    this.leaderboard.forEach((entry) => {
+      const leaderboardEntry = document.createElement("li");
+      leaderboardEntry.innerText = `${entry.name} - ${entry.score}`;
+      leaderboardList.appendChild(leaderboardEntry);
+    });
   }
 }
