@@ -2,6 +2,8 @@ window.onload = function () {
   const startButton = document.getElementById("start-button");
   const restartButton = document.getElementById("restart-button");
   const musicToggle = document.getElementById("musicToggle");
+  const highScoreForm = document.getElementById("high-score-form");
+  const playerNameInput = document.getElementById("player-name");
   const ourGame = new Game();
 
   startButton.addEventListener("click", function () {
@@ -62,4 +64,14 @@ window.onload = function () {
   restartButton.addEventListener("click", () => {
     window.location.reload();
   });
+
+  highScoreForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    ourGame.saveHighScoreName(playerNameInput.value);
+  });
+
+  if (new URLSearchParams(window.location.search).get("preview") === "game-over") {
+    ourGame.score = 250;
+    ourGame.gameOver();
+  }
 };
