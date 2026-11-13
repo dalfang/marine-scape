@@ -30,12 +30,14 @@
       </h2>
     </div>
     
-    <div id="game-screen">
-      <!-- Game screen content will go here -->
+    <div id="game-viewport">
+      <div id="game-screen">
+        <!-- Game screen content will go here -->
+      </div>
     </div>
 
     <div id="score-container">
-      <h2>Score: <span id="score">0</span></h2>
+      <h2>Score: <span id="score">0</span> | Best: <span id="high-score">0</span> (<span id="high-score-name"></span>) <span id="new-high-score">New record!</span></h2>
     </div>
 
     <!-- Game Over Screen -->
@@ -43,7 +45,15 @@
       <h1>GAME OVER</h1>
       <h3>FINAL SCORE</h3>
       <span id="final-score">0</span>
-      <br />
+      <h3>BEST SCORE</h3>
+      <span id="final-high-score">0</span>
+      <p id="final-high-score-name">No record yet</p>
+      <ol id="leaderboard-list"></ol>
+      <p id="new-high-score-message">New high score!</p>
+      <form id="high-score-form">
+        <input id="player-name" type="text" maxlength="12" autocomplete="name" required />
+        <button type="submit">Save Score</button>
+      </form>
       <button id="restart-button">Restart</button>
     </div>
   </main>
