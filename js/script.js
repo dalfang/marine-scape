@@ -65,7 +65,7 @@ window.onload = function () {
     window.location.reload();
   });
 
-  highScoreForm.addEventListener("submit", (event) => {
+  highScoreForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     ourGame.saveHighScoreName(playerNameInput.value);
   });
