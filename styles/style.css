@@ -113,7 +113,7 @@ body {
 }
 
 @media (max-width: 600px) {
-    #touch-controls.is-visible {
+  #touch-controls.is-visible {
     display: grid;
     grid-template-columns: repeat(3, 58px);
     grid-template-areas:
@@ -130,21 +130,19 @@ body {
     background: transparent;
     border: 0;
     box-sizing: border-box;
+    color: #eceded;
     display: flex;
+    font-family: "Press Start 2P";
+    font-size: 30px;
     height: 58px;
     justify-content: center;
+    line-height: 1;
     margin: 0;
     padding: 4px;
   }
 
   .touch-control:active {
     transform: scale(0.92);
-  }
-
-  .touch-control img {
-    height: 100%;
-    max-width: 100%;
-    object-fit: contain;
   }
 
   .touch-up {
@@ -162,6 +160,7 @@ body {
   .touch-right {
     grid-area: right;
   }
+
 
   #game-intro {
     min-height: 100vh;
