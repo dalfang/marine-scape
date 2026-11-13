@@ -1,6 +1,7 @@
 class Obstacle {
-    constructor (gameScreen) {
+    constructor (gameScreen, speed) {
         this.gameScreen = gameScreen;
+        this.speed = speed;
         this.heightArr = [70, 140, 210, 280, 350, 420]
         this.randomIndex = Math.floor(Math.random() * this.heightArr.length)
         this.height = this.heightArr[this.randomIndex]
@@ -25,7 +26,7 @@ class Obstacle {
         this.gameScreen.appendChild(this.element);
     }
     move(){
-        this.left -= 8
+        this.left -= this.speed
         this.updatePosition()
     }
     updatePosition(){
