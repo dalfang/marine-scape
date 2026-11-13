@@ -31,7 +31,7 @@ body {
 
 #instructions {
   display: none;
-  margin: 320px auto 0;
+  margin: 200px auto 0;
   align-content: center;
 }
 
@@ -85,7 +85,7 @@ body {
   display: none;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 110px;
+  margin-top: 90px;
   overflow: hidden;
 }
 
@@ -171,11 +171,17 @@ body {
 
 #game-end {
   display: none;
-  padding: 140px 0 80px;
+  padding: 50px 0;
 }
 
 #game-end h1 {
   font-size: 52px;
+  margin: 0;
+}
+
+#game-end h1 + h3 {
+  margin-top: 0;
+  padding-top: 12px;
 }
 
 h3 {
