@@ -22,6 +22,8 @@ class Game {
     this.leaderboard = this.getLeaderboard();
     this.highScore = this.leaderboard[0]?.score || 0;
     this.highScoreName = this.leaderboard[0]?.name || "";
+    this.supabaseClient = this.createSupabaseClient();
+    this.loadSharedLeaderboard();
     this.isNewHighScore = false;
     this.bubbles = 0;
     this.lives = 5;
@@ -233,6 +235,41 @@ class Game {
     }];
   }
 
+  createSupabaseClient() {
+    const url = window.SUPABASE_URL;
+    const anonKey = window.SUPABASE_ANON_KEY;
+    if (!url || !anonKey || !window.supabase) {
+      return null;
+    }
+    const projectUrl = url.replace(/\/rest\/v1\/?$/, "");
+    return window.supabase.createClient(projectUrl, anonKey);
+  }
+
+  async loadSharedLeaderboard() {
+    if (!this.supabaseClient) {
+      return;
+    }
+
+    const { data, error } = await this.supabaseClient
+      .from("leaderboard")
+      .select("name, score")
+      .order("score", { ascending: false })
+      .order("created_at", { ascending: true })
+      .limit(6);
+
+    if (error) {
+      console.error("Could not load shared leaderboard", error);
+      return;
+    }
+
+    this.leaderboard = data;
+    this.highScore = data[0]?.score || 0;
+    this.highScoreName = data[0]?.name || "";
+    localStorage.setItem("marineScapeLeaderboard", JSON.stringify(data));
+    this.renderLeaderboard();
+    this.updateScoreDisplay();
+  }
+
   addScore(points) {
     this.score += points;
     if (this.score > this.highScore) {
@@ -251,7 +288,7 @@ class Game {
       : "none";
   }
 
-  saveHighScoreName(playerName) {
+  async saveHighScoreName(playerName) {
     const savedName = playerName.trim().slice(0, 12) || "Anonymous";
     const currentRun = { name: savedName, score: this.score };
     this.leaderboard = [...this.leaderboard, currentRun]
@@ -268,6 +305,23 @@ class Game {
     document.getElementById("new-high-score-message").innerText = madeLeaderboard
       ? `${savedName}'s score of ${this.score} is on the leaderboard!`
       : `${savedName}'s score of ${this.score} did not reach the top six.`;
+
+    if (!this.supabaseClient) {
+      return;
+    }
+
+    const { error } = await this.supabaseClient
+      .from("leaderboard")
+      .insert({ name: savedName, score: this.score });
+
+    if (error) {
+      console.error("Could not save shared leaderboard score", error);
+      document.getElementById("new-high-score-message").innerText = "Score saved on this device only.";
+      return;
+    }
+
+    await this.loadSharedLeaderboard();
+    document.getElementById("new-high-score-message").innerText = "Score saved to the shared leaderboard!";
   }
 
   renderLeaderboard() {
