@@ -4,7 +4,32 @@ window.onload = function () {
   const musicToggle = document.getElementById("musicToggle");
   const highScoreForm = document.getElementById("high-score-form");
   const playerNameInput = document.getElementById("player-name");
+  const touchControls = document.getElementById("touch-controls");
   const ourGame = new Game();
+
+  function movePlayer(direction) {
+    ourGame.player.directionX = 0;
+    ourGame.player.directionY = 0;
+
+    if (direction === "right") {
+      ourGame.player.element.src = "./img/Playerright.png";
+      ourGame.player.directionX = 4;
+    } else if (direction === "left") {
+      ourGame.player.element.src = "./img/Playerleft.png";
+      ourGame.player.directionX = -4;
+    } else if (direction === "up") {
+      ourGame.player.element.src = "./img/Playerup.png";
+      ourGame.player.directionY = -4;
+    } else if (direction === "down") {
+      ourGame.player.element.src = "./img/Playerdown.png";
+      ourGame.player.directionY = 4;
+    }
+  }
+
+  function stopPlayer() {
+    ourGame.player.directionX = 0;
+    ourGame.player.directionY = 0;
+  }
 
   startButton.addEventListener("click", function () {
     instructions();
@@ -18,23 +43,30 @@ window.onload = function () {
   document.addEventListener("keydown", (event) => {
     console.log("a key was pressed", event);
     if (event.code === "ArrowRight") {
-      ourGame.player.element.src = "./img/Playerright.png";
-      ourGame.player.directionX = 4;
+      movePlayer("right");
     } else if (event.code === "ArrowLeft") {
-      ourGame.player.element.src = "./img/Playerleft.png";
-      ourGame.player.directionX = -4;
+      movePlayer("left");
     } else if (event.code === "ArrowUp") {
-      ourGame.player.element.src = "./img/Playerup.png";
-      ourGame.player.directionY = -4;
+      movePlayer("up");
     } else if (event.code === "ArrowDown") {
-      ourGame.player.element.src = "./img/Playerdown.png";
-      ourGame.player.directionY = 4;
+      movePlayer("down");
     }
   });
 
   document.addEventListener("keyup", () => {
-    ourGame.player.directionX = 0;
-    ourGame.player.directionY = 0;
+    stopPlayer();
+  });
+
+  document.querySelectorAll(".touch-control").forEach((control) => {
+    control.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      control.setPointerCapture(event.pointerId);
+      movePlayer(control.dataset.direction);
+    });
+
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach((eventName) => {
+      control.addEventListener(eventName, stopPlayer);
+    });
   });
 
   function instructions() {
@@ -45,6 +77,7 @@ window.onload = function () {
   function startGame() {
     console.log("start game");
     ourGame.start();
+    touchControls.classList.add("is-visible");
     const backgroundMusic = document.getElementById("backgroundMusic");
     backgroundMusic.play();
     musicToggle.classList.remove("paused");
@@ -67,7 +100,7 @@ window.onload = function () {
 
   highScoreForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    ourGame.saveHighScoreName(playerNameInput.value);
+    await ourGame.saveHighScoreName(playerNameInput.value);
   });
 
   if (new URLSearchParams(window.location.search).get("preview") === "game-over") {
