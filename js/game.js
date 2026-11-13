@@ -184,7 +184,6 @@ class Game {
         this.bonuses.push(new Bonus(this.gameScreen));
       }
     });
-
   }
   gameOver() {
     window.scrollTo(0, 0);
@@ -198,6 +197,8 @@ class Game {
     document.getElementById("lives-container").style.display = "none";
     document.getElementById("score-container").style.display = "none";
     document.getElementById("final-score").innerText = this.score;
+    document.getElementById("final-high-score").innerText = this.highScore;
+    document.getElementById("final-high-score-name").innerText = this.highScoreName;
     this.renderLeaderboard();
     document.getElementById("new-high-score-message").style.display = "block";
     document.getElementById("new-high-score-message").innerText = this.isNewHighScore
@@ -265,6 +266,8 @@ class Game {
     localStorage.setItem("marineScapeHighScore", this.highScore);
     localStorage.setItem("marineScapeHighScoreName", this.highScoreName);
     this.renderLeaderboard();
+    document.getElementById("final-high-score").innerText = this.highScore;
+    document.getElementById("final-high-score-name").innerText = this.highScoreName;
     document.getElementById("high-score-form").style.display = "none";
     document.getElementById("new-high-score-message").innerText = madeLeaderboard
       ? `${savedName}'s score of ${this.score} is on the leaderboard!`
