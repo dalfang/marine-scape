@@ -84,6 +84,10 @@ body {
   display: none;
 }
 
+#touch-controls {
+  display: none;
+}
+
 #game-viewport {
   display: none;
   margin-left: auto;
@@ -109,6 +113,56 @@ body {
 }
 
 @media (max-width: 600px) {
+    #touch-controls.is-visible {
+    display: grid;
+    grid-template-columns: repeat(3, 58px);
+    grid-template-areas:
+      ". up ."
+      "left down right";
+    gap: 8px;
+    justify-content: center;
+    margin: 20px auto 0;
+    touch-action: none;
+  }
+
+  .touch-control {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    box-sizing: border-box;
+    display: flex;
+    height: 58px;
+    justify-content: center;
+    margin: 0;
+    padding: 4px;
+  }
+
+  .touch-control:active {
+    transform: scale(0.92);
+  }
+
+  .touch-control img {
+    height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  .touch-up {
+    grid-area: up;
+  }
+
+  .touch-left {
+    grid-area: left;
+  }
+
+  .touch-down {
+    grid-area: down;
+  }
+
+  .touch-right {
+    grid-area: right;
+  }
+
   #game-intro {
     min-height: 100vh;
   }
