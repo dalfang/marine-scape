@@ -9,6 +9,7 @@ class Player {
 
         this.directionX = 0;
         this.directionY = 0;
+        this.speedMultiplier = 1;
 
         this.element = document.createElement('img');
         this.element.src = playerImage;
@@ -22,8 +23,8 @@ class Player {
     }
 
     move(){
-        this.left += this.directionX *2
-        this.top += this.directionY *2
+        this.left += this.directionX * 2 * this.speedMultiplier
+        this.top += this.directionY * 2 * this.speedMultiplier
         if (this.left <= 0) {
             this.left = 0
         }
@@ -82,4 +83,3 @@ class Player {
         }
       }
 }
-
