@@ -223,6 +223,41 @@ body {
   }
 }
 
+.immortal {
+  filter: drop-shadow(0 0 8px #7cfc00) drop-shadow(0 0 14px #7cfc00);
+}
+
+.boost-background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  overflow: hidden;
+  transition: opacity 0.5s ease-in-out;
+}
+
+/* Scroll with transform (GPU) instead of background-position, which repaints every frame. */
+.boost-background::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 15600px;
+  height: 100%;
+  background: url("../img/bgwide-small.png") 0 0 / 100% 100% no-repeat;
+  will-change: transform;
+  animation: boost-scroll 10.5s linear forwards;
+}
+
+@keyframes boost-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-14700px);
+  }
+}
+
 #game-end {
   display: none;
   padding: 60px 0 80px;
