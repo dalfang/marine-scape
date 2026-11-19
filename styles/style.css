@@ -233,7 +233,7 @@ body {
   z-index: -1;
   opacity: 0;
   overflow: hidden;
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity 1s ease-in-out;
 }
 
 /* Scroll with transform (GPU) instead of background-position, which repaints every frame. */
