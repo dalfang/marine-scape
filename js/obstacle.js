@@ -1,8 +1,8 @@
 class Obstacle {
-    constructor (gameScreen, speed) {
+    constructor (gameScreen, speed, bounds = { top: 50, bottom: 550 }) {
         this.gameScreen = gameScreen;
         this.speed = speed;
-        this.heightArr = [70, 140, 210, 280, 350, 420]
+        this.heightArr = [70, 140, 210, 280, 350]
         this.randomIndex = Math.floor(Math.random() * this.heightArr.length)
         this.height = this.heightArr[this.randomIndex]
         
@@ -10,7 +10,7 @@ class Obstacle {
         this.randomIndex = Math.floor(Math.random() * this.widthArr.length)
         this.width = this.widthArr[this.randomIndex]
 
-        this.topArr = [((this.height-this.height) + 50), (550 - this.height)]
+        this.topArr = [bounds.top, (bounds.bottom - this.height)]
         this.randomIndex = Math.floor(Math.random() * this.topArr.length)
         this.top = this.topArr[this.randomIndex]
 
@@ -25,8 +25,8 @@ class Obstacle {
         this.element.style.top = `${this.top}px`;
         this.gameScreen.appendChild(this.element);
     }
-    move(){
-        this.left -= this.speed
+    move(speedFactor = 1){
+        this.left -= this.speed * speedFactor
         this.updatePosition()
     }
     updatePosition(){
