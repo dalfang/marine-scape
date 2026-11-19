@@ -90,7 +90,6 @@ class Game {
     this.counter++;
     this.updateBoost();
     this.updateDifficulty();
-   
     if (
       this.counter >= this.nextGreenHeartTick &&
       !this.greenHeart &&
@@ -140,7 +139,7 @@ class Game {
       "position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity 2s ease-in-out;" +
       'background:url("./img/bgbrown.png") left top / cover no-repeat;';
     this.gameScreen.appendChild(overlay);
-    
+    // Force a reflow so the opacity transition starts from 0.
     overlay.getBoundingClientRect();
     overlay.style.opacity = "1";
     overlay.addEventListener("transitionend", () => {
@@ -261,14 +260,12 @@ class Game {
 
   startBoost() {
     this.boostTicksLeft = 10 * 65;
-    
     this.immortalTicksLeft = 11 * 65;
     this.player.element.classList.add("immortal");
     this.player.speedMultiplier = 1.5;
     const overlay = document.createElement("div");
     overlay.className = "boost-background";
     this.gameScreen.appendChild(overlay);
-  
     overlay.getBoundingClientRect();
     overlay.style.opacity = "1";
     this.boostOverlay = overlay;
