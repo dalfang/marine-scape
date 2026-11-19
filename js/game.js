@@ -253,7 +253,7 @@ class Game {
   }
 
   randomGreenHeartDelay() {
-    return Math.floor(40 * 65 + Math.random() * 30 * 65);
+    return Math.floor(25 * 65 + Math.random() * 20 * 65);
   }
 
   removeGreenHeart() {
