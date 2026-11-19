@@ -40,6 +40,7 @@ class Game {
     this.boostTicksLeft = 0;
     this.immortalTicksLeft = 0;
     this.boostOverlay = null;
+    this.speedFactor = 1;
     this.fitGameScreen = this.fitGameScreen.bind(this);
     window.addEventListener("resize", this.fitGameScreen);
   }
@@ -63,6 +64,7 @@ class Game {
     this.gameViewport.style.display = "block";
     this.gameScreen.style.display = "block";
     this.fitGameScreen();
+    new Image().src = "./img/bgwide-small.png";
     this.startRun();
     document.getElementById("lives-container").style.display = "flex";
     document.getElementById("score-container").style.display = "flex";
@@ -73,7 +75,6 @@ class Game {
       if (this.isGameOver) {
         return;
       }
-      // Fixed timestep so every device runs the same number of ticks per second.
       this.accumulatedTime += Math.min(now - this.lastFrameTime, 250);
       this.lastFrameTime = now;
       while (this.accumulatedTime >= this.gameLoopFrequency && !this.isGameOver) {
@@ -139,7 +140,6 @@ class Game {
       "position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity 2s ease-in-out;" +
       'background:url("./img/bgbrown.png") left top / cover no-repeat;';
     this.gameScreen.appendChild(overlay);
-    // Force a reflow so the opacity transition starts from 0.
     overlay.getBoundingClientRect();
     overlay.style.opacity = "1";
     overlay.addEventListener("transitionend", () => {
@@ -169,7 +169,10 @@ class Game {
   }
 
   update() {
-    const speedFactor = this.boostTicksLeft > 0 ? 1.5 : 1;
+    const targetSpeed = this.boostTicksLeft > 0 ? 1.5 : 1;
+    this.speedFactor += (targetSpeed - this.speedFactor) * 0.04;
+    const speedFactor = this.speedFactor;
+    this.player.speedMultiplier = speedFactor;
     this.player.move();
 
     this.obstacles.forEach((oneObstacle, oneObstacleIndex) => {
@@ -262,7 +265,6 @@ class Game {
     this.boostTicksLeft = 10 * 65;
     this.immortalTicksLeft = 11 * 65;
     this.player.element.classList.add("immortal");
-    this.player.speedMultiplier = 1.5;
     const overlay = document.createElement("div");
     overlay.className = "boost-background";
     this.gameScreen.appendChild(overlay);
@@ -291,7 +293,6 @@ class Game {
   }
 
   endBoost() {
-    this.player.speedMultiplier = 1;
     const overlay = this.boostOverlay;
     this.boostOverlay = null;
     overlay.style.opacity = "0";
