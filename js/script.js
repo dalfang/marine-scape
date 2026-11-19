@@ -7,6 +7,10 @@ window.onload = function () {
   const touchControls = document.getElementById("touch-controls");
   const ourGame = new Game();
 
+  if (localStorage.getItem("marineScapeMuted") === "true") {
+    musicToggle.classList.add("paused");
+  }
+
   function movePlayer(direction) {
     ourGame.player.directionX = 0;
     ourGame.player.directionY = 0;
