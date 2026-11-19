@@ -18,8 +18,8 @@ class Bonus {
         this.element.style.top = `${this.top}px`;
         this.gameScreen.appendChild(this.element);
     }
-    move(){
-        this.left -= 6
+    move(speedFactor = 1){
+        this.left -= 6 * speedFactor
         this.updatePosition()
     }
     updatePosition(){
