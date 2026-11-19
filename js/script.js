@@ -79,8 +79,12 @@ window.onload = function () {
     ourGame.start();
     touchControls.classList.add("is-visible");
     const backgroundMusic = document.getElementById("backgroundMusic");
-    backgroundMusic.play();
-    musicToggle.classList.remove("paused");
+    if (localStorage.getItem("marineScapeMuted") === "true") {
+      musicToggle.classList.add("paused");
+    } else {
+      backgroundMusic.play();
+      musicToggle.classList.remove("paused");
+    }
   }
 
   musicToggle.addEventListener("click", function () {
@@ -88,9 +92,11 @@ window.onload = function () {
     if (backgroundMusic.paused) {
       backgroundMusic.play();
       musicToggle.classList.remove("paused");
+      localStorage.setItem("marineScapeMuted", "false");
     } else {
       backgroundMusic.pause();
       musicToggle.classList.add("paused");
+      localStorage.setItem("marineScapeMuted", "true");
     }
   });
 
