@@ -116,27 +116,24 @@ class Game {
       this.fadeToDeepBackground();
       this.obstacleBounds = { top: 0, bottom: this.height };
     }
-    if (this.score >= 3000) {
-      this.level = 10;
-      this.obstacleSpeed = 13;
-    } else if(this.score >= 2000) {
-      this.level = 20;
-      this.obstacleSpeed = 13;
-    } else if(this.score >= 1000) {
-      this.level = 30;
-      this.obstacleSpeed = 13;
-    } else if (this.score >= 800) {
+    if (this.score >= 1500) {
       this.level = 40;
-      this.obstacleSpeed = 12;
+      this.obstacleSpeed = 15;
+    } else if (this.score >= 1000) {
+      this.level = 45;
+      this.obstacleSpeed = 14;
+    } else if (this.score >= 800) {
+      this.level = 55;
+      this.obstacleSpeed = 13;
     } else if (this.score >= 600) {
-      this.level = 50;
-      this.obstacleSpeed = 11;
+      this.level = 65;
+      this.obstacleSpeed = 12;
     } else if (this.score >= 400) {
-      this.level = 70;
-      this.obstacleSpeed = 10;
+      this.level = 75;
+      this.obstacleSpeed = 11;
     } else if (this.score >= 200) {
-      this.level = 80;
-      this.obstacleSpeed = 9;
+      this.level = 85;
+      this.obstacleSpeed = 10;
     }
   }
 
