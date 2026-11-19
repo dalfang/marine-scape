@@ -57,12 +57,26 @@ class Game {
     this.gameViewport.style.display = "block";
     this.gameScreen.style.display = "block";
     this.fitGameScreen();
+    this.startRun();
     document.getElementById("lives-container").style.display = "flex";
     document.getElementById("score-container").style.display = "flex";
     this.updateScoreDisplay();
-    this.gameIntervalId = setInterval(() => {
-      this.gameLoop();
-    }, this.gameLoopFrequency);
+    this.lastFrameTime = performance.now();
+    this.accumulatedTime = 0;
+    const frame = (now) => {
+      if (this.isGameOver) {
+        return;
+      }
+      // Fixed timestep so every device runs the same number of ticks per second.
+      this.accumulatedTime += Math.min(now - this.lastFrameTime, 250);
+      this.lastFrameTime = now;
+      while (this.accumulatedTime >= this.gameLoopFrequency && !this.isGameOver) {
+        this.gameLoop();
+        this.accumulatedTime -= this.gameLoopFrequency;
+      }
+      this.gameIntervalId = requestAnimationFrame(frame);
+    };
+    this.gameIntervalId = requestAnimationFrame(frame);
   }
 
   gameLoop() {
@@ -73,7 +87,7 @@ class Game {
       this.obstacles.push(new Obstacle(this.gameScreen, this.obstacleSpeed));
     }
     if (this.isGameOver) {
-      clearInterval(this.gameIntervalId);
+      cancelAnimationFrame(this.gameIntervalId);
       this.gameOver();
     }
   }
@@ -245,6 +259,19 @@ class Game {
     return window.supabase.createClient(projectUrl, anonKey);
   }
 
+  async startRun() {
+    this.runId = null;
+    if (!this.supabaseClient) {
+      return;
+    }
+    const { data, error } = await this.supabaseClient.rpc("start_run");
+    if (error) {
+      console.error("Could not start run", error);
+      return;
+    }
+    this.runId = data;
+  }
+
   async loadSharedLeaderboard() {
     if (!this.supabaseClient) {
       return;
@@ -306,13 +333,17 @@ class Game {
       ? `${savedName}'s score of ${this.score} is on the leaderboard!`
       : `${savedName}'s score of ${this.score} did not reach the top six.`;
 
-    if (!this.supabaseClient) {
+    if (!this.supabaseClient || !this.runId) {
+      document.getElementById("new-high-score-message").innerText = "Score saved on this device only.";
       return;
     }
 
-    const { error } = await this.supabaseClient
-      .from("leaderboard")
-      .insert({ name: savedName, score: this.score });
+    const { error } = await this.supabaseClient.rpc("submit_score", {
+      p_run_id: this.runId,
+      p_name: savedName,
+      p_score: this.score,
+    });
+    this.runId = null;
 
     if (error) {
       console.error("Could not save shared leaderboard score", error);
