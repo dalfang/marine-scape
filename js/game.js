@@ -167,11 +167,7 @@ class Game {
         this.hearts.splice(oneHeartIndex, 1);
         oneHeart.element.remove();
         this.hearts.push(new Heart(this.gameScreen));
-        if (this.lives < 5) {
-          this.lives += 1;
-        } else {
-          this.lives += 0;
-        }
+        this.lives += 1;
         const livesElement = document.getElementById("lives");
         livesElement.innerText = this.lives;
       }
