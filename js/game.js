@@ -32,8 +32,14 @@ class Game {
     this.gameLoopFrequency = 1000 / 65;
     this.counter = 0;
     this.level = 120;
-    this.minimumObstacleGap = 350;
-    this.obstacleSpeed = 9;
+    this.minimumObstacleGap = 375;
+    this.obstacleSpeed = 8;
+    this.obstacleBounds = { top: 50, bottom: 550 };
+    this.greenHeart = null;
+    this.nextGreenHeartTick = this.randomGreenHeartDelay();
+    this.boostTicksLeft = 0;
+    this.immortalTicksLeft = 0;
+    this.boostOverlay = null;
     this.fitGameScreen = this.fitGameScreen.bind(this);
     window.addEventListener("resize", this.fitGameScreen);
   }
@@ -82,9 +88,21 @@ class Game {
   gameLoop() {
     this.update();
     this.counter++;
+    this.updateBoost();
     this.updateDifficulty();
+   
+    if (
+      this.counter >= this.nextGreenHeartTick &&
+      !this.greenHeart &&
+      this.boostTicksLeft === 0
+    ) {
+      this.greenHeart = new Heart(this.gameScreen, "./img/greenheart.png", this.width);
+      this.nextGreenHeartTick = this.counter + this.randomGreenHeartDelay();
+    }
     if (this.counter % this.level === 0 && this.canSpawnObstacle()) {
-      this.obstacles.push(new Obstacle(this.gameScreen, this.obstacleSpeed));
+      const bounds =
+        this.boostTicksLeft > 0 ? { top: 0, bottom: this.height } : this.obstacleBounds;
+      this.obstacles.push(new Obstacle(this.gameScreen, this.obstacleSpeed, bounds));
     }
     if (this.isGameOver) {
       cancelAnimationFrame(this.gameIntervalId);
@@ -93,22 +111,45 @@ class Game {
   }
 
   updateDifficulty() {
+    if (this.score >= 2000 && !this.isDeepBackground) {
+      this.isDeepBackground = true;
+      this.fadeToDeepBackground();
+      this.obstacleBounds = { top: 0, bottom: this.height };
+    }
     if (this.score >= 1000) {
-      this.level = 40;
+      this.level = 50;
       this.obstacleSpeed = 13;
     } else if (this.score >= 800) {
-      this.level = 50;
+      this.level = 60;
       this.obstacleSpeed = 12;
     } else if (this.score >= 600) {
-      this.level = 60;
+      this.level = 70;
       this.obstacleSpeed = 11;
     } else if (this.score >= 400) {
-      this.level = 70;
-      this.obstacleSpeed = 10;
-    } else if (this.score >= 200) {
       this.level = 80;
       this.obstacleSpeed = 10;
+    } else if (this.score >= 200) {
+      this.level = 90;
+      this.obstacleSpeed = 9;
     }
+  }
+
+  fadeToDeepBackground() {
+    const overlay = document.createElement("div");
+    overlay.style.cssText =
+      "position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity 2s ease-in-out;" +
+      'background:url("./img/bgbrown.png") left top / cover no-repeat;';
+    this.gameScreen.appendChild(overlay);
+    
+    overlay.getBoundingClientRect();
+    overlay.style.opacity = "1";
+    overlay.addEventListener("transitionend", () => {
+      this.gameScreen.style.backgroundImage = 'url("./img/bgbrown.png")';
+      this.gameScreen.style.backgroundSize = "cover";
+      this.gameScreen.style.backgroundPosition = "left top";
+      this.gameScreen.style.animation = "none";
+      overlay.remove();
+    }, { once: true });
   }
 
   canSpawnObstacle() {
@@ -129,13 +170,14 @@ class Game {
   }
 
   update() {
+    const speedFactor = this.boostTicksLeft > 0 ? 1.5 : 1;
     this.player.move();
 
     this.obstacles.forEach((oneObstacle, oneObstacleIndex) => {
-      oneObstacle.move();
+      oneObstacle.move(speedFactor);
 
       const thereWasACollisionCollision = this.player.didCollide(oneObstacle);
-      if (thereWasACollisionCollision) {
+      if (thereWasACollisionCollision && this.immortalTicksLeft === 0) {
         this.obstacles.splice(oneObstacleIndex, 1);
         oneObstacle.element.remove();
         this.lives -= 1;
@@ -160,7 +202,7 @@ class Game {
     });
 
     this.hearts.forEach((oneHeart, oneHeartIndex) => {
-      oneHeart.move();
+      oneHeart.move(speedFactor);
 
       const heartAcquired = this.player.didCollide(oneHeart);
       if (heartAcquired) {
@@ -180,7 +222,7 @@ class Game {
     });
 
     this.bonuses.forEach((oneBonus, oneBonusIndex) => {
-      oneBonus.move();
+      oneBonus.move(speedFactor);
 
       const bonusAcquired = this.player.didCollide(oneBonus);
       if (bonusAcquired) {
@@ -196,6 +238,67 @@ class Game {
         this.bonuses.push(new Bonus(this.gameScreen));
       }
     });
+
+    if (this.greenHeart) {
+      this.greenHeart.move(speedFactor);
+      if (this.player.didCollide(this.greenHeart)) {
+        this.removeGreenHeart();
+        this.startBoost();
+      } else if (this.greenHeart.left < 0 - this.greenHeart.width) {
+        this.removeGreenHeart();
+      }
+    }
+  }
+
+  randomGreenHeartDelay() {
+    return Math.floor(40 * 65 + Math.random() * 30 * 65);
+  }
+
+  removeGreenHeart() {
+    this.greenHeart.element.remove();
+    this.greenHeart = null;
+  }
+
+  startBoost() {
+    this.boostTicksLeft = 10 * 65;
+    
+    this.immortalTicksLeft = 11 * 65;
+    this.player.element.classList.add("immortal");
+    this.player.speedMultiplier = 1.5;
+    const overlay = document.createElement("div");
+    overlay.className = "boost-background";
+    this.gameScreen.appendChild(overlay);
+  
+    overlay.getBoundingClientRect();
+    overlay.style.opacity = "1";
+    this.boostOverlay = overlay;
+  }
+
+  updateBoost() {
+    if (this.immortalTicksLeft > 0) {
+      this.immortalTicksLeft--;
+      if (this.immortalTicksLeft === 0) {
+        this.player.element.classList.remove("immortal");
+      }
+    }
+    if (this.boostTicksLeft <= 0) {
+      return;
+    }
+    this.boostTicksLeft--;
+    if (this.counter % 6 === 0) {
+      this.addScore(1);
+    }
+    if (this.boostTicksLeft === 0) {
+      this.endBoost();
+    }
+  }
+
+  endBoost() {
+    this.player.speedMultiplier = 1;
+    const overlay = this.boostOverlay;
+    this.boostOverlay = null;
+    overlay.style.opacity = "0";
+    overlay.addEventListener("transitionend", () => overlay.remove(), { once: true });
   }
   gameOver() {
     window.scrollTo(0, 0);
