@@ -32,8 +32,8 @@ class Game {
     this.gameLoopFrequency = 1000 / 65;
     this.counter = 0;
     this.level = 120;
-    this.minimumObstacleGap = 375;
-    this.obstacleSpeed = 8;
+    this.minimumObstacleGap = 350;
+    this.obstacleSpeed = 9;
     this.obstacleBounds = { top: 50, bottom: 550 };
     this.greenHeart = null;
     this.nextGreenHeartTick = this.randomGreenHeartDelay();
