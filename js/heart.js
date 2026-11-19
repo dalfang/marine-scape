@@ -1,5 +1,5 @@
 class Heart {
-    constructor (gameScreen, image = './img/heart.png', left = 6000) {
+    constructor (gameScreen, image = './img/heart.png', left = 10000) {
         this.gameScreen = gameScreen;
         this.height = 35
         this.width = 35
