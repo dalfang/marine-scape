@@ -6,8 +6,10 @@ window.onload = function () {
   const playerNameInput = document.getElementById("player-name");
   const touchControls = document.getElementById("touch-controls");
   const ourGame = new Game();
+  let gameStarted = false;
+  const isMuted = () => localStorage.getItem("marineScapeMuted") === "true";
 
-  if (localStorage.getItem("marineScapeMuted") === "true") {
+  if (isMuted()) {
     musicToggle.classList.add("paused");
   }
 
@@ -83,24 +85,24 @@ window.onload = function () {
     ourGame.start();
     touchControls.classList.add("is-visible");
     const backgroundMusic = document.getElementById("backgroundMusic");
-    if (localStorage.getItem("marineScapeMuted") === "true") {
-      musicToggle.classList.add("paused");
-    } else {
+    gameStarted = true;
+    if (!isMuted()) {
       backgroundMusic.play();
-      musicToggle.classList.remove("paused");
     }
   }
 
   musicToggle.addEventListener("click", function () {
     const backgroundMusic = document.getElementById("backgroundMusic");
-    if (backgroundMusic.paused) {
-      backgroundMusic.play();
-      musicToggle.classList.remove("paused");
-      localStorage.setItem("marineScapeMuted", "false");
-    } else {
+    const muted = !isMuted();
+    localStorage.setItem("marineScapeMuted", String(muted));
+    musicToggle.classList.toggle("paused", muted);
+    if (!gameStarted) {
+      return;
+    }
+    if (muted) {
       backgroundMusic.pause();
-      musicToggle.classList.add("paused");
-      localStorage.setItem("marineScapeMuted", "true");
+    } else {
+      backgroundMusic.play();
     }
   });
 
