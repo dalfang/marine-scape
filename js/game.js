@@ -64,7 +64,6 @@ class Game {
     this.gameViewport.style.display = "block";
     this.gameScreen.style.display = "block";
     this.fitGameScreen();
-    // Preload so the boost background doesn't pop in mid-fade.
     new Image().src = "./img/bgwide-small.png";
     new Image().src = "./img/bgbrown.png";
     this.startRun();
@@ -77,7 +76,6 @@ class Game {
       if (this.isGameOver) {
         return;
       }
-      // Fixed timestep so every device runs the same number of ticks per second.
       this.accumulatedTime += Math.min(now - this.lastFrameTime, 250);
       this.lastFrameTime = now;
       while (this.accumulatedTime >= this.gameLoopFrequency && !this.isGameOver) {
@@ -114,9 +112,10 @@ class Game {
   }
 
   updateDifficulty() {
-    if (this.score >= 2000 && !this.isDeepBackground) {
+    if (this.score >= 100 && !this.isDeepBackground) {
       this.isDeepBackground = true;
       this.fadeToDeepBackground();
+      this.obstacleBounds = { top: 0, bottom: this.height };
     }
     if (this.score >= 1500) {
       this.level = 40;
@@ -141,10 +140,7 @@ class Game {
 
   fadeToDeepBackground() {
     const overlay = document.createElement("div");
-    overlay.style.cssText =
-      "position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity 2s ease-in-out;" +
-      'background:url("./img/bgbrown.png") 0 0 / cover repeat-x;' +
-      "animation:slide 5s linear infinite;";
+    overlay.className = "deep-background";
     this.gameScreen.appendChild(overlay);
     overlay.getBoundingClientRect();
     overlay.style.opacity = "1";
@@ -262,13 +258,11 @@ class Game {
 
   startBoost() {
     this.boostTicksLeft = 10 * 65;
-    // Extra second of immunity after the boost so it doesn't end mid-collision.
     this.immortalTicksLeft = 11 * 65;
     this.player.element.classList.add("immortal");
     const overlay = document.createElement("div");
     overlay.className = "boost-background";
     this.gameScreen.appendChild(overlay);
-    // Force a reflow so the opacity transition starts from 0.
     overlay.getBoundingClientRect();
     overlay.style.opacity = "1";
     this.boostOverlay = overlay;
