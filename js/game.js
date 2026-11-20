@@ -112,7 +112,7 @@ class Game {
   }
 
   updateDifficulty() {
-    if (this.score >= 100 && !this.isDeepBackground) {
+    if (this.score >= 2000 && !this.isDeepBackground) {
       this.isDeepBackground = true;
       this.fadeToDeepBackground();
       this.obstacleBounds = { top: 0, bottom: this.height };
