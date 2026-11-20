@@ -227,6 +227,16 @@ body {
   filter: drop-shadow(0 0 8px #7cfc00) drop-shadow(0 0 14px #7cfc00);
 }
 
+.deep-background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 2s ease-in-out;
+  background: url("../img/bgbrown.png") 0 0 / cover repeat-x;
+  animation: slide 5s linear infinite;
+}
+
 .boost-background {
   position: absolute;
   inset: 0;
@@ -236,7 +246,6 @@ body {
   transition: opacity 1s ease-in-out;
 }
 
-/* Scroll with transform (GPU) instead of background-position, which repaints every frame. */
 .boost-background::before {
   content: "";
   position: absolute;
