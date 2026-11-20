@@ -246,6 +246,7 @@ body {
   transition: opacity 1s ease-in-out;
 }
 
+/* Scroll with transform (GPU) instead of background-position, which repaints every frame. */
 .boost-background::before {
   content: "";
   position: absolute;
